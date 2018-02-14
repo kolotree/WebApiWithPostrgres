@@ -11,5 +11,10 @@ namespace Services.User
         {
             return _userRepository.Create(userName, passwordHash);
         }
+
+        public string GetPasswordHash(string userName)
+        {
+            return _userRepository.GetPasswordHash(userName);
+        }
     }
 }

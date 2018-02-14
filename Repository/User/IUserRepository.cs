@@ -5,5 +5,6 @@ namespace Repository.User
     public interface IUserRepository
     {
         Task Create(string userName, string passwordHash);
+        string GetPasswordHash(string userName);
     }
 }

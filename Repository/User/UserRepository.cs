@@ -13,12 +13,14 @@ namespace Repository.User
         {
             try
             {
-                NpgsqlCommand cmd = new NpgsqlCommand();
-                cmd.Connection = _connection;
-                cmd.CommandText = "INSERT INTO User (UserName, PasswordHash) VALUES (@u, @p)";
-                cmd.Parameters.AddWithValue("u", userName);
-                cmd.Parameters.AddWithValue("p", passwordHash);
-                cmd.ExecuteNonQuery();
+                _connection.Open();
+
+                var command = new NpgsqlCommand();
+                command.Connection = _connection;
+                command.CommandText = "INSERT INTO User (UserName, PasswordHash) VALUES (@u, @p)";
+                command.Parameters.AddWithValue("u", userName);
+                command.Parameters.AddWithValue("p", passwordHash);
+                command.ExecuteNonQuery();
             }
             catch (PostgresException ex)
             {
@@ -29,6 +31,33 @@ namespace Repository.User
                 _connection.Close();
             }
             return Task.FromResult(true);
+        }
+
+        public string GetPasswordHash(string userName)
+        {
+            string passwordHash = null;
+            try
+            {
+                _connection.Open();
+
+                var command = new NpgsqlCommand();
+                command.Connection = _connection;
+                command.CommandText = "SELECT PasswordHash FROM User WHERE UserName = @u";
+                command.Parameters.AddWithValue("u", userName);
+
+                var dataReader = command.ExecuteReader();
+                passwordHash = (string)dataReader["PasswordHash"];
+            }
+            catch (PostgresException ex)
+            {
+                // log exception
+                return null;
+            }
+            finally
+            {
+                _connection.Close();
+            }
+            return passwordHash;
         }
     }
 }
