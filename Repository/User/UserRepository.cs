@@ -17,7 +17,7 @@ namespace Repository.User
 
                 var command = new NpgsqlCommand();
                 command.Connection = _connection;
-                command.CommandText = "INSERT INTO User (UserName, PasswordHash) VALUES (@u, @p)";
+                command.CommandText = "INSERT INTO \"User\" (\"UserName\", \"PasswordHash\") VALUES (@u, @p)";
                 command.Parameters.AddWithValue("u", userName);
                 command.Parameters.AddWithValue("p", passwordHash);
                 command.ExecuteNonQuery();
@@ -42,11 +42,14 @@ namespace Repository.User
 
                 var command = new NpgsqlCommand();
                 command.Connection = _connection;
-                command.CommandText = "SELECT PasswordHash FROM User WHERE UserName = @u";
+                command.CommandText = "SELECT \"PasswordHash\" FROM \"User\" WHERE \"UserName\" = @u";
                 command.Parameters.AddWithValue("u", userName);
 
                 var dataReader = command.ExecuteReader();
-                passwordHash = (string)dataReader["PasswordHash"];
+                while (dataReader.Read())
+                {
+                    passwordHash = dataReader.GetString(0);
+                }
             }
             catch (PostgresException ex)
             {
