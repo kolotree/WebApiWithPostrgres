@@ -7,7 +7,7 @@ using System;
 
 namespace WebApiWithPostrgres.Providers
 {
-    internal class UserStoreService : IUserStore<ApplicationUser>, IUserPasswordStore<ApplicationUser>
+    internal class UserStoreService : IUserStore<ApplicationUser>, IUserPasswordStore<ApplicationUser>, IUserEmailStore<ApplicationUser>
     {
 
         private readonly IUserService _userService = new ServiceFactory().GetUserServiceInstance();
@@ -24,6 +24,12 @@ namespace WebApiWithPostrgres.Providers
 
         public void Dispose() {}
 
+        public Task<ApplicationUser> FindByEmailAsync(string email)
+        {
+            // for sake of simplicity, we will set username to be equal to email
+            return FindByNameAsync(email);
+        }
+
         public Task<ApplicationUser> FindByIdAsync(string userId)
         {
             throw new System.NotImplementedException();
@@ -35,6 +41,16 @@ namespace WebApiWithPostrgres.Providers
             return Task.FromResult(passwordHash != null ? new ApplicationUser { UserName = userName} : null);
         }
 
+        public Task<string> GetEmailAsync(ApplicationUser user)
+        {
+            return Task.FromResult(user != null ? user.Email : null);
+        }
+
+        public Task<bool> GetEmailConfirmedAsync(ApplicationUser user)
+        {
+            throw new NotImplementedException();
+        }
+
         public Task<string> GetPasswordHashAsync(ApplicationUser user)
         {
             var passwordHash = _userService.GetPasswordHash(user.UserName);
@@ -44,6 +60,16 @@ namespace WebApiWithPostrgres.Providers
         public Task<bool> HasPasswordAsync(ApplicationUser user)
         {
             throw new System.NotImplementedException();
+        }
+
+        public Task SetEmailAsync(ApplicationUser user, string email)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task SetEmailConfirmedAsync(ApplicationUser user, bool confirmed)
+        {
+            throw new NotImplementedException();
         }
 
         public Task SetPasswordHashAsync(ApplicationUser user, string passwordHash)
