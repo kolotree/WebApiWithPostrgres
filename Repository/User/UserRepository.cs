@@ -1,17 +1,12 @@
-﻿using Npgsql;
-using System;
-using System.Collections.Generic;
-using System.Configuration;
+﻿using CSharpFunctionalExtensions;
+using Npgsql;
 using System.Data;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Repository.User
 {
     public class UserRepository : BaseRepository, IUserRepository
     {
-        public Task Create(string userName, string passwordHash)
+        public Result Create(string userName, string passwordHash)
         {
             try
             {
@@ -33,12 +28,12 @@ namespace Repository.User
             catch (PostgresException ex)
             {
                 // log exception
-                return Task.FromException(ex);
+                return Result.Fail(ex.Message);
             }
-            return Task.FromResult(true);
+            return Result.Ok();
         }
 
-        public string GetPasswordHash(string userName)
+        public Result<string> GetPasswordHash(string userName)
         {
             string passwordHash = null;
             try
@@ -64,9 +59,9 @@ namespace Repository.User
             catch (PostgresException ex)
             {
                 // log exception
-                return null;
+                return Result.Fail<string>(ex.Message);
             }
-            return passwordHash;
+            return Result.Ok(passwordHash);
         }
     }
 }

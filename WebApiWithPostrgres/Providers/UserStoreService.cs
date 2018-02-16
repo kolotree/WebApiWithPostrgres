@@ -4,6 +4,7 @@ using WebApiWithPostrgres.Models;
 using Services.User;
 using Services;
 using System;
+using CSharpFunctionalExtensions;
 
 namespace WebApiWithPostrgres.Providers
 {
@@ -12,10 +13,11 @@ namespace WebApiWithPostrgres.Providers
 
         private readonly IUserService _userService = new ServiceFactory().GetUserServiceInstance();
 
-        public Task CreateAsync(ApplicationUser user)
-        {
-            return _userService.Create(user.UserName, user.PasswordHash);
-        }
+        public Task CreateAsync(ApplicationUser user) => 
+               _userService.Create(user.UserName, user.PasswordHash)
+                           .OnBoth(result => result.IsSuccess ? 
+                                               Task.FromResult<ApplicationUser>(null) : 
+                                               Task.FromException(new ArgumentException(result.Error)));
 
         public Task DeleteAsync(ApplicationUser user)
         {
@@ -35,11 +37,11 @@ namespace WebApiWithPostrgres.Providers
             throw new System.NotImplementedException();
         }
 
-        public Task<ApplicationUser> FindByNameAsync(string userName)
-        {
-            var passwordHash = _userService.GetPasswordHash(userName);
-            return Task.FromResult(passwordHash != null ? new ApplicationUser { UserName = userName} : null);
-        }
+        public Task<ApplicationUser> FindByNameAsync(string userName) =>
+            _userService.GetPasswordHash(userName)
+                        .OnBoth(result => result.IsSuccess ? 
+                                                Task.FromResult(new ApplicationUser { UserName = userName }) : 
+                                                Task.FromResult<ApplicationUser>(null));
 
         public Task<string> GetEmailAsync(ApplicationUser user)
         {
@@ -51,11 +53,11 @@ namespace WebApiWithPostrgres.Providers
             throw new NotImplementedException();
         }
 
-        public Task<string> GetPasswordHashAsync(ApplicationUser user)
-        {
-            var passwordHash = _userService.GetPasswordHash(user.UserName);
-            return Task.FromResult(passwordHash != null ? passwordHash : null);
-        }
+        public Task<string> GetPasswordHashAsync(ApplicationUser user) =>
+            _userService.GetPasswordHash(user.UserName)
+                        .OnBoth(result => result.IsSuccess ?
+                                                Task.FromResult(result.Value) :
+                                                Task.FromResult<string>(null));
 
         public Task<bool> HasPasswordAsync(ApplicationUser user)
         {

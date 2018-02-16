@@ -1,10 +1,10 @@
-﻿using System.Threading.Tasks;
+﻿using CSharpFunctionalExtensions;
 
 namespace Repository.User
 {
     public interface IUserRepository
     {
-        Task Create(string userName, string passwordHash);
-        string GetPasswordHash(string userName);
+        Result Create(string userName, string passwordHash);
+        Result<string> GetPasswordHash(string userName);
     }
 }

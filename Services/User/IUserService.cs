@@ -1,10 +1,10 @@
-﻿using System.Threading.Tasks;
+﻿using CSharpFunctionalExtensions;
 
 namespace Services.User
 {
     public interface IUserService
     {
-        Task Create(string userName, string passwordHash);
-        string GetPasswordHash(string userName);
+        Result Create(string userName, string passwordHash);
+        Result<string> GetPasswordHash(string userName);
     }
 }

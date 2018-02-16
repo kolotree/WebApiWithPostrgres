@@ -1,5 +1,5 @@
-﻿using Repository.User;
-using System.Threading.Tasks;
+﻿using CSharpFunctionalExtensions;
+using Repository.User;
 
 namespace Services.User
 {
@@ -7,12 +7,12 @@ namespace Services.User
     {
         private readonly IUserRepository _userRepository = new UserRepository();
 
-        public Task Create(string userName, string passwordHash)
+        public Result Create(string userName, string passwordHash)
         {
             return _userRepository.Create(userName, passwordHash);
         }
 
-        public string GetPasswordHash(string userName)
+        public Result<string> GetPasswordHash(string userName)
         {
             return _userRepository.GetPasswordHash(userName);
         }
