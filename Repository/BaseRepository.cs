@@ -6,7 +6,7 @@ namespace Repository
 {
     public class BaseRepository
     {
-        protected readonly NpgsqlConnection _connection = new NpgsqlConnection(ConfigurationManager.ConnectionStrings["PostgreSqlConnection"].ConnectionString);
+        protected NpgsqlConnection GetNpgsqlConnection() => new NpgsqlConnection(ConfigurationManager.ConnectionStrings["PostgreSqlConnection"].ConnectionString);
 
         protected NpgsqlParameter CreateStringParam(NpgsqlCommand command, string name, string value)
         {

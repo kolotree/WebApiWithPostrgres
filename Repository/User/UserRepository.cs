@@ -1,6 +1,7 @@
 ﻿using Npgsql;
 using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Data;
 using System.Linq;
 using System.Text;
@@ -14,22 +15,25 @@ namespace Repository.User
         {
             try
             {
-                _connection.Open();
+                NpgsqlConnection _connection;
+                using (_connection = GetNpgsqlConnection())
+                {
+                    _connection.Open();
+                    NpgsqlCommand command;
+                    using (command = new NpgsqlCommand("CreateUser", _connection))
+                    {
+                        command.CommandType = CommandType.StoredProcedure;
+                        command.Parameters.Add(CreateStringParam(command, "username", userName));
+                        command.Parameters.Add(CreateStringParam(command, "PasswordHash", passwordHash));
 
-                var command = new NpgsqlCommand("CreateUser", _connection);
-                command.CommandType = CommandType.StoredProcedure;
-                command.Parameters.Add(CreateStringParam(command, "username", userName));
-                command.Parameters.Add(CreateStringParam(command, "PasswordHash", passwordHash));
-
-                command.ExecuteReader();
+                        command.ExecuteReader();
+                    }
+                }
             }
             catch (PostgresException ex)
             {
+                // log exception
                 return Task.FromException(ex);
-            }
-            finally
-            {
-                _connection.Close();
             }
             return Task.FromResult(true);
         }
@@ -39,26 +43,28 @@ namespace Repository.User
             string passwordHash = null;
             try
             {
-                _connection.Open();
-
-                var command = new NpgsqlCommand("searchuser", _connection);
-                command.CommandType = CommandType.StoredProcedure;
-                command.Parameters.Add(CreateStringParam(command, "username", userName));
-
-                var dataReader = command.ExecuteReader();
-                while (dataReader.Read())
+                NpgsqlConnection _connection;
+                using (_connection = GetNpgsqlConnection())
                 {
-                    passwordHash = (string)dataReader["PasswordHash"];
+                    _connection.Open();
+                    NpgsqlCommand command;
+                    using (command = new NpgsqlCommand("searchuser", _connection))
+                    {
+                        command.CommandType = CommandType.StoredProcedure;
+                        command.Parameters.Add(CreateStringParam(command, "username", userName));
+
+                        var dataReader = command.ExecuteReader();
+                        while (dataReader.Read())
+                        {
+                            passwordHash = (string)dataReader["PasswordHash"];
+                        }
+                    }
                 }
             }
             catch (PostgresException ex)
             {
                 // log exception
                 return null;
-            }
-            finally
-            {
-                _connection.Close();
             }
             return passwordHash;
         }
