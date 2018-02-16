@@ -1,6 +1,7 @@
 ﻿using Npgsql;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -15,12 +16,12 @@ namespace Repository.User
             {
                 _connection.Open();
 
-                var command = new NpgsqlCommand();
-                command.Connection = _connection;
-                command.CommandText = "INSERT INTO \"User\" (\"UserName\", \"PasswordHash\") VALUES (@u, @p)";
-                command.Parameters.AddWithValue("u", userName);
-                command.Parameters.AddWithValue("p", passwordHash);
-                command.ExecuteNonQuery();
+                var command = new NpgsqlCommand("CreateUser", _connection);
+                command.CommandType = CommandType.StoredProcedure;
+                command.Parameters.Add(CreateStringParam(command, "username", userName));
+                command.Parameters.Add(CreateStringParam(command, "PasswordHash", passwordHash));
+
+                command.ExecuteReader();
             }
             catch (PostgresException ex)
             {
@@ -40,15 +41,14 @@ namespace Repository.User
             {
                 _connection.Open();
 
-                var command = new NpgsqlCommand();
-                command.Connection = _connection;
-                command.CommandText = "SELECT \"PasswordHash\" FROM \"User\" WHERE \"UserName\" = @u";
-                command.Parameters.AddWithValue("u", userName);
+                var command = new NpgsqlCommand("searchuser", _connection);
+                command.CommandType = CommandType.StoredProcedure;
+                command.Parameters.Add(CreateStringParam(command, "username", userName));
 
                 var dataReader = command.ExecuteReader();
                 while (dataReader.Read())
                 {
-                    passwordHash = dataReader.GetString(0);
+                    passwordHash = (string)dataReader["PasswordHash"];
                 }
             }
             catch (PostgresException ex)
